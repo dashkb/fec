@@ -8,25 +8,33 @@ rsvp      = require 'rsvp'
 hamlc     = require 'haml-coffee'
 marked    = require 'marked'
 highlight = require 'highlight.js'
-Moment    = require 'moment'
+moment    = require 'moment'
+slug      = require 'slug'
 Promise   = rsvp.Promise
+log       = require './log'
+
+dateFormat = 'MMMM Do YYYY, h:mm:ss a'
 
 extractFrontMatter = (ctx) ->
   new Promise (resolve, reject) ->
+    log.debug "Started extracting front matter"
     files = glob.sync "#{ctx.cmd.srcDir}/**/*.md"
     ctx.pageMetadata = _.reduce files, (data, file) ->
       relativePath = path.relative ctx.cmd.srcDir, file
       {attributes, body} = fm fs.readFileSync file, encoding: 'utf8'
 
       fs.writeFileSync "#{ctx.cmd.buildDir}/#{relativePath}", body
-      data[relativePath] = attributes
+      data[relativePath] = _.extend attributes,
+        slug: slug(attributes.title).toLowerCase()
       data
     , {}
 
+    log.debug "Finished extracting front matter"
     resolve ctx
 
 addGitMetadata = (ctx) ->
   new Promise (resolve, reject) ->
+    log.debug "Started extracting git metadata"
     files = glob.sync "#{ctx.cmd.srcDir}/**/*.md"
     promises = _.map files, (file) ->
       relativePath = path.relative ctx.cmd.srcDir, file
@@ -35,20 +43,26 @@ addGitMetadata = (ctx) ->
           md = ctx.pageMetadata[relativePath]
           md.revisions = _.map (output.split "\n"), (line) ->
             [sha, date] = line.split '|'
-            {sha: sha, date: new Moment date}
+            {sha: sha, date: date}
           resolve()
 
-      promises
-    , {}
-
     rsvp.all(promises).then ->
+      log.debug "Finished extracting git metadata"
       resolve ctx
 
 renderPages = (ctx) ->
-  layout = hamlc.compile String fs.readFileSync "#{ctx.cmd.srcDir}/layout.hamlc"
-  nav    = hamlc.compile String fs.readFileSync "#{ctx.cmd.srcDir}/nav.haml"
+  log.debug "Started compiling templates"
+  files = glob.sync "#{ctx.cmd.srcDir}/**/*.hamlc"
+  templates = _.reduce files, (templates, file) ->
+    relativePath = path.relative ctx.cmd.buildDir, file
+    relativePath = path.basename relativePath, '.hamlc'
+    templates[relativePath] = hamlc.compile String fs.readFileSync file
+    templates
+  , {}
+  log.debug "Finished compiling templates"
 
   new Promise (resolve, reject) ->
+    log.debug "Started rendering pages"
     files = glob.sync "#{ctx.cmd.buildDir}/**/*.md"
     _.each files, (file) ->
       relativePath = path.relative ctx.cmd.buildDir, file
@@ -63,20 +77,28 @@ renderPages = (ctx) ->
       pageData =
         site:
           pages: ctx.pageMetadata
-        page: ctx.pageMetadata[relativePath]
-        nav: nav
-        content: html
+        page: _.extend ctx.pageMetadata[relativePath], html: html
+        JST: templates
+        helpers:
+          date: (date) -> moment(date).format(dateFormat)
+          _: _
 
-      fs.writeFileSync file.replace('md', 'html'), layout(pageData)
+      dest = "#{ctx.cmd.buildDir}/#{pageData.page.slug}.html"
+      fs.writeFileSync dest, templates['site'](pageData)
       fs.unlinkSync file
 
+    log.debug "Finished rendering pages"
     resolve ctx
 
 module.exports = buildPages = (ctx) ->
+  log.debug "Started building pages"
   new Promise (resolve, reject) ->
     extractFrontMatter(ctx).then (ctx) ->
       addGitMetadata ctx
     .then (ctx) ->
       renderPages ctx
     .then (ctx) ->
+      log.debug "Finished building pages"
       resolve ctx
+    .then null, (err) ->
+      reject err

@@ -16,7 +16,7 @@ buildPages  = require './build_pages'
 
 startBuild = (ctx) ->
   new Promise (resolve, reject) ->
-    log "Starting build"
+    log.debug "Starting build"
     rimraf.sync ctx.cmd.buildDir
     mkdirp.sync ctx.cmd.buildDir
     _.each ['css', 'js', 'fonts', 'images'], (dir) ->
@@ -25,15 +25,18 @@ startBuild = (ctx) ->
 
 buildScripts = (ctx) ->
   new Promise (resolve, reject) ->
+    log.debug "Started scripts"
     bundle = browserify glob.sync "#{ctx.cmd.srcDir}/**/*.+(coffee|js)"
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.cmd.compress
     bundle.bundle (err, src) ->
       fs.writeFileSync "#{ctx.cmd.buildDir}/js/all.js", src
+      log.debug "Finished scripts"
       resolve ctx
 
 buildStyles = (ctx) ->
   new Promise (resolve, reject) ->
+    log.debug "Started styles"
     files = glob.sync "#{ctx.cmd.srcDir}/**/*.+(less|css)"
     src = _.reduce files, (src, path) ->
       src + fs.readFileSync path
@@ -46,20 +49,24 @@ buildStyles = (ctx) ->
     parser.parse src, (err, tree) ->
       css = tree.toCSS compress: ctx.cmd.compress
       fs.writeFileSync "#{ctx.cmd.buildDir}/css/all.css", css
+      log.debug "Finished styles"
       resolve ctx
 
 copyFontAwesome = (ctx) ->
   new Promise (resolve, reject) ->
+    log.debug "Started copying font-awesome"
     src = "#{ctx.cmd.bowerDir}/font-awesome/fonts/*"
     dst = "#{ctx.cmd.buildDir}/fonts/"
     exec "cp #{src} #{dst}", (err, out) ->
       if err
         reject err
       else
+        log.debug "Finished copying font-awesome"
         resolve ctx
 
 copyImages = (ctx) ->
   new Promise (resolve, reject) ->
+    log.debug "Started copying images"
     images = glob.sync "#{ctx.cmd.srcDir}/**/*.+(jpg|png)"
     promises = _.map images, (file) ->
       new Promise (resolve, reject) ->
@@ -69,8 +76,11 @@ copyImages = (ctx) ->
           if err then reject(err) else resolve()
 
     if promises.length > 0
-      rsvp.all(promises).then -> resolve ctx
+      rsvp.all(promises).then ->
+        log.debug "Finished copying images"
+        resolve ctx
     else
+      log.debug "No images found"
       resolve ctx
 
 signalDone = (ctx) ->

@@ -16,7 +16,7 @@ rebuild = (cb) ->
     build = (require 'child_process').spawn "#{__dirname}/site", ['build'],
       stdio: 'inherit'
 
-    build.on 'close', ->
+    build.on 'close', (code) ->
       building = false
       cb?()
 
@@ -33,6 +33,5 @@ rebuild ->
   log "Press return to rebuild"
 
   (require 'gaze') "#{process.env.ROOT}/src/**", (err, watcher) ->
-    @on 'all', ->
-      rebuild()
+    @on 'all', -> rebuild()
 

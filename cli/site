@@ -3,6 +3,7 @@
 (cmd = require 'commander')
   .version('0.0.1')
   .command('build', 'Build the site')
+  .command('dev', 'Run a dev server and rebuild on changes')
   .parse(process.argv)
 
 if cmd.args.length == 0

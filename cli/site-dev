@@ -1,0 +1,38 @@
+#!/usr/bin/env coffee
+
+log  = require './lib/log'
+path = require 'path'
+process.env.ROOT ||= path.resolve __dirname, '../'
+
+(cmd = require 'commander')
+  .version('0.0.1')
+  .option('-p, --port [PORT]', 'Port to listen on', 8000)
+  .parse(process.argv)
+
+building = false
+rebuild = (cb) ->
+  unless building
+    building = true
+    build = (require 'child_process').spawn "#{__dirname}/site", ['build'],
+      stdio: 'inherit'
+
+    build.on 'close', ->
+      building = false
+      cb?()
+
+process.stdin.resume()
+process.stdin.on 'data', -> rebuild()
+
+rebuild ->
+  connect = require 'connect'
+  connect()
+    .use(connect.static('./build'))
+    .listen(cmd.port)
+
+  log "Dev server listening on port #{cmd.port}"
+  log "Press return to rebuild"
+
+  (require 'gaze') "#{process.env.ROOT}/src/**", (err, watcher) ->
+    @on 'all', ->
+      rebuild()
+

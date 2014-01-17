@@ -1,0 +1,14 @@
+#!/usr/bin/env coffee
+
+path = require 'path'
+process.env.ROOT ||= path.resolve __dirname, '../'
+
+(cmd = require 'commander')
+  .version('0.0.1')
+  .option('-s, --src-dir [path]', 'Source directory', path.resolve(__dirname, '../src'))
+  .option('-b, --build-dir [path]', 'Build directory', path.resolve(__dirname, '../build'))
+  .option('--bower-dir [path]', 'Path to bower_components', path.resolve(__dirname, '../bower_components'))
+  .option('-c, --compress', 'Compress JS/CSS', false)
+  .parse(process.argv)
+
+(require './lib/build') cmd

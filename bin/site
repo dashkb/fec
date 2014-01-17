@@ -1,0 +1,7 @@
+#!/usr/bin/env coffee
+
+args = process.argv.slice (process.argv.indexOf __filename) + 1
+
+(require 'child_process').spawn "#{__dirname}/../cli/site", args,
+  stdio: 'inherit'
+

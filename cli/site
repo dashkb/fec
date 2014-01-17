@@ -1,0 +1,10 @@
+#!/usr/bin/env coffee
+
+(cmd = require 'commander')
+  .version('0.0.1')
+  .command('build', 'Build the site')
+  .parse(process.argv)
+
+if cmd.args.length == 0
+  (require 'child_process').spawn __filename, ['build'], stdio: 'inherit'
+

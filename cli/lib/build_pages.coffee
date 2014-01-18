@@ -9,7 +9,7 @@ hamlc     = require 'haml-coffee'
 marked    = require 'marked'
 highlight = require 'highlight.js'
 moment    = require 'moment'
-slug      = require 'slug'
+slugify   = require 'slug'
 Promise   = rsvp.Promise
 log       = require './log'
 
@@ -24,8 +24,10 @@ extractFrontMatter = (ctx) ->
       {attributes, body} = fm fs.readFileSync file, encoding: 'utf8'
 
       fs.writeFileSync "#{ctx.cmd.buildDir}/#{relativePath}", body
+
       data[relativePath] = _.extend attributes,
-        slug: slug(attributes.title).toLowerCase()
+        slug: slug = attributes.slug || slugify(attributes.title).toLowerCase()
+        path: "#{path.dirname relativePath}/#{slug}.html"
       data
     , {}
 
@@ -83,7 +85,7 @@ renderPages = (ctx) ->
           date: (date) -> moment(date).format(dateFormat)
           _: _
 
-      dest = "#{ctx.cmd.buildDir}/#{pageData.page.slug}.html"
+      dest = "#{ctx.cmd.buildDir}/#{pageData.page.path}"
       fs.writeFileSync dest, templates['site'](pageData)
       fs.unlinkSync file
 

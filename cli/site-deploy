@@ -1,0 +1,40 @@
+#!/usr/bin/env coffee
+
+log                 = require './lib/log'
+path                = require 'path'
+{Promise}           = require 'rsvp'
+{exec}              = require 'child_process'
+process.env.ROOT || = path.resolve __dirname, '../'
+
+(cmd = require 'commander')
+  .version('0.0.1')
+  .option('-p, --port [PORT]', 'Port to listen on', 8000)
+  .parse(process.argv)
+
+process.chdir process.env.ROOT
+new Promise (done, fail) ->
+  exec "git status", (err, out) ->
+    if true or out.match /working directory clean/
+      done()
+    else
+      fail "You must have a clean working directory to deploy.  Check the output of `git status`."
+.then ->
+  new Promise (done, fail) ->
+    exec "git co master && cp -R build/* ./ && git add . && git commit -m 'Update' && git push origin master", (err, stdout) ->
+      if err
+        exec "git clean -df && git co source", ->
+          if stdout.match /nothing to commit/
+            fail "There were no changes since the last deploy"
+          else
+            fail [err, stdout].join '\n'
+      else
+        exec "git co source", ->
+          log.debug stdout
+          done()
+.then ->
+  log "Success!"
+.then null, (err) ->
+  log.error "Error during deploy: #{err}"
+  log.error "Cleanup was attempted; you should make sure nothing is busted."
+  log.error "Specifically consider `git branch -f master master~`"
+  process.exit()

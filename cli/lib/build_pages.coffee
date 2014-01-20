@@ -68,25 +68,27 @@ renderPages = (ctx) ->
     files = glob.sync "#{ctx.cmd.buildDir}/**/*.md"
     _.each files, (file) ->
       relativePath = path.relative ctx.cmd.buildDir, file
-      md = fs.readFileSync file
-      html = marked String(md),
-        gfm: true
-        tables: true
-        smartypants: true
-        smartLists: true
-        highlight: (code) -> highlight.highlightAuto(code).value
 
-      pageData =
-        site:
-          pages: ctx.pageMetadata
-        page: _.extend ctx.pageMetadata[relativePath], html: html
-        JST: templates
-        helpers:
-          date: (date) -> moment(date).format(dateFormat)
-          _: _
+      unless ctx.pageMetadata[relativePath].draft
+        md = fs.readFileSync file
+        html = marked String(md),
+          gfm: true
+          tables: true
+          smartypants: true
+          smartLists: true
+          highlight: (code) -> highlight.highlightAuto(code).value
 
-      dest = "#{ctx.cmd.buildDir}/#{pageData.page.path}"
-      fs.writeFileSync dest, templates['site'](pageData)
+        pageData =
+          site:
+            pages: ctx.pageMetadata
+          page: _.extend ctx.pageMetadata[relativePath], html: html
+          JST: templates
+          helpers:
+            date: (date) -> moment(date).format(dateFormat)
+            _: _
+
+        dest = "#{ctx.cmd.buildDir}/#{pageData.page.path}"
+        fs.writeFileSync dest, templates['site'](pageData)
       fs.unlinkSync file
 
     log.debug "Finished rendering pages"

@@ -14,7 +14,7 @@ process.env.ROOT || = path.resolve __dirname, '../'
 process.chdir process.env.ROOT
 new Promise (done, fail) ->
   exec "git status", (err, out) ->
-    if true or out.match /working directory clean/
+    if out.match /working directory clean/
       done()
     else
       fail "You must have a clean working directory to deploy.  Check the output of `git status`."

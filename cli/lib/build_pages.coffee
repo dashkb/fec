@@ -76,7 +76,7 @@ renderPages = (ctx) ->
           tables: true
           smartypants: true
           smartLists: true
-          highlight: (code) -> highlight.highlightAuto(code).value
+          highlight: (code, lang) -> highlight.highlight(lang, code).value
 
         pageData =
           site:

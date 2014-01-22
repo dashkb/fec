@@ -26,13 +26,25 @@ startBuild = (ctx) ->
 buildScripts = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started scripts"
-    bundle = browserify glob.sync "#{ctx.cmd.srcDir}/**/*.+(coffee|js)"
+
+    scripts = _.map [
+      'jquery/jquery.js',
+      'bootstrap/dist/js/bootstrap.js',
+    ], (script) ->
+      "#{ctx.cmd.bowerDir}/#{script}"
+
+    scripts.push ctx.cmd.mainScript || "#{ctx.cmd.srcDir}/site.coffee"
+
+    bundle = browserify scripts
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.cmd.compress
     bundle.bundle (err, src) ->
-      fs.writeFileSync "#{ctx.cmd.buildDir}/js/all.js", src
-      log.debug "Finished scripts"
-      resolve ctx
+      if err
+        reject err
+      else
+        fs.writeFileSync "#{ctx.cmd.buildDir}/js/all.js", src
+        log.debug "Finished scripts"
+        resolve ctx
 
 buildStyles = (ctx) ->
   new Promise (resolve, reject) ->
@@ -98,6 +110,7 @@ module.exports = (cmd) ->
         buildScripts, buildStyles, copyFontAwesome, copyImages
       ], (fn) -> fn ctx
       steps.then -> resolve ctx
+      steps.then null, reject
   .then (ctx) ->
     buildPages ctx
   .then (ctx) ->

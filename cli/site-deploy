@@ -20,6 +20,14 @@ new Promise (done, fail) ->
       fail "You must have a clean working directory to deploy.  Check the output of `git status`."
 .then ->
   new Promise (done, fail) ->
+    log.debug "Building site..."
+    exec "site build -c", (err, out) ->
+      if err
+        fail err
+      else
+        done()
+.then ->
+  new Promise (done, fail) ->
     exec "git co master && cp -R build/* ./ && git add . && git commit -m 'Update' && git push origin master", (err, stdout) ->
       if err
         exec "git clean -df && git co source", ->

@@ -69,7 +69,7 @@ renderPages = (ctx) ->
     _.each files, (file) ->
       relativePath = path.relative ctx.cmd.buildDir, file
 
-      unless ctx.pageMetadata[relativePath].draft
+      if ctx.cmd.renderDrafts || !ctx.pageMetadata[relativePath].draft
         md = fs.readFileSync file
         html = marked String(md),
           gfm: true

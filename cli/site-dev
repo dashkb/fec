@@ -13,7 +13,7 @@ building = false
 rebuild = (cb) ->
   unless building
     building = true
-    build = (require 'child_process').spawn "#{__dirname}/site", ['build'],
+    build = (require 'child_process').spawn "#{__dirname}/site", ['build', '--render-drafts', '--compress=false'],
       stdio: 'inherit'
 
     build.on 'close', (code) ->

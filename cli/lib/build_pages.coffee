@@ -25,9 +25,16 @@ extractFrontMatter = (ctx) ->
 
       fs.writeFileSync "#{ctx.cmd.buildDir}/#{relativePath}", body
 
-      data[relativePath] = _.extend attributes,
-        slug: slug = attributes.slug || slugify(attributes.title).toLowerCase()
-        path: "#{path.dirname relativePath}/#{slug}.html"
+      slug = slugify(
+        attributes.slug || attributes.title || path.basename(file, '.md')
+      ).toLowerCase()
+      dest = "#{path.dirname relativePath}/#{slug}.html"
+      data[relativePath] = _.extend
+        slug: slug
+        path: dest
+        template: 'article'
+        index: true
+      , attributes
       data
     , {}
 
@@ -86,6 +93,12 @@ renderPages = (ctx) ->
           helpers:
             date: (date) -> moment(date).format(dateFormat)
             _: _
+            articles: _(ctx.pageMetadata).values().filter (page) ->
+              page.template == 'article' && page.index
+            .sortBy (page) ->
+              _.first(page.revisions).date
+            .reverse().value()
+
 
         dest = "#{ctx.cmd.buildDir}/#{pageData.page.path}"
         fs.writeFileSync dest, templates['site'](pageData)

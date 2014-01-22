@@ -17,7 +17,6 @@ buildPages  = require './build_pages'
 startBuild = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Starting build"
-    rimraf.sync ctx.cmd.buildDir
     mkdirp.sync ctx.cmd.buildDir
     _.each ['css', 'js', 'fonts', 'images'], (dir) ->
       mkdirp.sync "#{ctx.cmd.buildDir}/#{dir}"

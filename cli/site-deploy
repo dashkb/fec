@@ -28,7 +28,7 @@ new Promise (done, fail) ->
         done()
 .then ->
   new Promise (done, fail) ->
-    exec "git co master && cp -R build/* ./ && git add . && git commit -m 'Update' && git push origin master", (err, stdout) ->
+    exec "git co master && sleep 0.1s; cp -R build/* ./ && git add . && sleep 0.1s; git commit -m 'Update' && sleep 0.1s; git push origin master", (err, stdout) ->
       if err
         exec "git clean -df && git co source", ->
           if stdout.match /nothing to commit/

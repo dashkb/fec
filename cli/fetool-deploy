@@ -21,7 +21,7 @@ new Promise (done, fail) ->
 .then ->
   new Promise (done, fail) ->
     log.debug "Building site..."
-    exec "site build -c", (err, out) ->
+    exec "fetool build -c", (err, out) ->
       if err
         fail err
       else

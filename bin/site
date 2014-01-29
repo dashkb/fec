@@ -2,6 +2,6 @@
 
 args = process.argv.slice (process.argv.indexOf __filename) + 1
 
-(require 'child_process').spawn "#{__dirname}/../cli/site", args,
+(require 'child_process').spawn "#{__dirname}/../cli/fetool", args,
   stdio: 'inherit'
 

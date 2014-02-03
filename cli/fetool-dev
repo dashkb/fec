@@ -2,7 +2,6 @@
 
 log  = require './lib/log'
 path = require 'path'
-process.env.ROOT ||= path.resolve __dirname, '../'
 
 (cmd = require 'commander')
   .version('0.0.1')
@@ -26,12 +25,12 @@ process.stdin.on 'data', -> rebuild()
 rebuild ->
   connect = require 'connect'
   connect()
-    .use(connect.static('./build'))
+    .use(connect.static('./public'))
     .listen(cmd.port)
 
   log "Dev server listening on port #{cmd.port}"
   log "Press return to rebuild"
 
-  (require 'gaze') "#{process.env.ROOT}/src/**", (err, watcher) ->
+  (require 'gaze') "#{process.cwd()}/fe/**", (err, watcher) ->
     @on 'all', -> rebuild()
 

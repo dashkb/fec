@@ -4,14 +4,12 @@ log                 = require './lib/log'
 path                = require 'path'
 {Promise}           = require 'rsvp'
 {exec}              = require 'child_process'
-process.env.ROOT || = path.resolve __dirname, '../'
 
 (cmd = require 'commander')
   .version('0.0.1')
   .option('-p, --port [PORT]', 'Port to listen on', 8000)
   .parse(process.argv)
 
-process.chdir process.env.ROOT
 new Promise (done, fail) ->
   exec "git status", (err, out) ->
     if out.match /working directory clean/
@@ -28,7 +26,7 @@ new Promise (done, fail) ->
         done()
 .then ->
   new Promise (done, fail) ->
-    exec "git co master && sleep 0.1s; cp -R build/* ./ && git add . && sleep 0.1s; git commit -m 'Update' && sleep 0.1s; git push origin master", (err, stdout) ->
+    exec "git co master && sleep 0.1s; cp -R public/* ./ && git add . && sleep 0.1s; git commit -m 'Update' && sleep 0.1s; git push origin master", (err, stdout) ->
       if err
         exec "git clean -df && git co source", ->
           if stdout.match /nothing to commit/

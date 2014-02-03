@@ -1,13 +1,13 @@
 #!/usr/bin/env coffee
 
 path = require 'path'
-process.env.ROOT ||= path.resolve __dirname, '../'
 
 (cmd = require 'commander')
   .version('0.0.1')
-  .option('-s, --src-dir [path]', 'Source directory', path.resolve(__dirname, '../src'))
-  .option('-b, --build-dir [path]', 'Build directory', path.resolve(__dirname, '../build'))
-  .option('--bower-dir [path]', 'Path to bower_components', path.resolve(__dirname, '../bower_components'))
+  .option('-m, --main-script [path]', 'Path to main JS/Coffee file', process.cwd() + '/fe/fe.coffee')
+  .option('-s, --src-dir [path]', 'Source directory', process.cwd() + '/fe')
+  .option('-b, --build-dir [path]', 'Build directory', process.cwd() + '/public')
+  .option('--bower-dir [path]', 'Path to bower_components', process.cwd() + '/bower_components')
   .option('--render-drafts', 'Build pages with draft: true')
   .option('-c, --compress', 'Compress JS/CSS')
   .parse(process.argv)

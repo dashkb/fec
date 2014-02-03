@@ -2,6 +2,8 @@
   "name": "fetool",
   "version": "0.0.1",
   "bin": "./cli/fetool",
+  "repository": "http://github.com/dashkb/fetool",
+  "description": "Front end tool",
   "dependencies": {
     "marked": "~0.3.0",
     "highlight.js": "~8.0.0",

@@ -26,15 +26,7 @@ buildScripts = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started scripts"
 
-    scripts = _.map [
-      'jquery/jquery.js',
-      'bootstrap/dist/js/bootstrap.js',
-    ], (script) ->
-      "#{ctx.cmd.bowerDir}/#{script}"
-
-    scripts.push ctx.cmd.mainScript || "#{ctx.cmd.srcDir}/site.coffee"
-
-    bundle = browserify scripts
+    bundle = browserify ctx.cmd.mainScript
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.cmd.compress
     bundle.bundle (err, src) ->

@@ -48,7 +48,7 @@ addGitMetadata = (ctx) ->
     promises = _.map files, (file) ->
       relativePath = path.relative ctx.cmd.srcDir, file
       new Promise (resolve, reject) ->
-        exec "git log --pretty=\"format:%h|%ai\" #{file}", (err, output) ->
+        exec "git log --follow --pretty=\"format:%h|%ai\" #{file}", (err, output) ->
           md = ctx.pageMetadata[relativePath]
           md.revisions = _.map (output.split "\n"), (line) ->
             [sha, date] = line.split '|'

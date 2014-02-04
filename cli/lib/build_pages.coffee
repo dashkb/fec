@@ -84,6 +84,7 @@ renderPages = (ctx) ->
           smartypants: true
           smartLists: true
           highlight: (code, lang) -> highlight.highlight(lang, code).value
+          langPrefix: ''
 
         pageData =
           site:

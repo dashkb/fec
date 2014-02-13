@@ -6,10 +6,11 @@ build = require './build'
 
 devArgs = yargs
   .default('port', process.env.PORT || 8000)
+  .default('serve', true)
   .argv
 
 module.exports = run: (args) ->
-  _.extend args, devArgs
+  _.defaults args, devArgs
 
   building = false
   rebuild = (cb) ->
@@ -29,14 +30,15 @@ module.exports = run: (args) ->
   # Build the site, then start a dev server
   # and watch for changes
   rebuild ->
-    connect = require 'connect'
-    connect()
-      .use(connect.static('./public'))
-      .listen(args.port)
+    if args.serve
+      connect = require 'connect'
+      connect()
+        .use(connect.static('./public'))
+        .listen(args.port)
 
-    log "Dev server listening on port #{args.port}"
+      log "Dev server listening on port #{args.port}"
+
     log "Press return to rebuild"
-
     (require 'gaze') "#{process.cwd()}/fe/**", (err, watcher) ->
       @on 'all', -> rebuild()
 

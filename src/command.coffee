@@ -16,4 +16,8 @@ module.exports = run: ->
     .argv
 
   _.each args._, (command) ->
+    if command == 'watch'
+      command = 'dev'
+      args.serve = false
+
     require("./#{command}").run args

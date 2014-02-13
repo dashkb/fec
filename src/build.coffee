@@ -17,49 +17,52 @@ buildPages  = require './build_pages'
 startBuild = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Starting build"
-    mkdirp.sync ctx.cmd.buildDir
+    mkdirp.sync ctx.args.buildDir
     _.each ['css', 'js', 'fonts', 'images'], (dir) ->
-      mkdirp.sync "#{ctx.cmd.buildDir}/#{dir}"
+      mkdirp.sync "#{ctx.args.buildDir}/#{dir}"
     resolve ctx
 
 buildScripts = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started scripts"
 
-    bundle = browserify ctx.cmd.mainScript
+    bundle = browserify "#{ctx.args.srcDir}/#{ctx.args.mainScript}"
     bundle.transform require 'coffeeify'
-    bundle.transform require 'uglifyify' if ctx.cmd.compress
+    bundle.transform require 'uglifyify' if ctx.args.compress
     bundle.bundle (err, src) ->
       if err
         reject err
       else
-        fs.writeFileSync "#{ctx.cmd.buildDir}/js/all.js", src
+        fs.writeFileSync "#{ctx.args.buildDir}/js/all.js", src
         log.debug "Finished scripts"
         resolve ctx
 
 buildStyles = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started styles"
-    files = glob.sync "#{ctx.cmd.srcDir}/**/*.+(less|css)"
+    files = glob.sync "#{ctx.args.srcDir}/**/*.+(less|css)"
     src = _.reduce files, (src, path) ->
       src + fs.readFileSync path
     , ''
 
     parser = new less.Parser
-      paths: [ctx.cmd.srcDir, ctx.cmd.bowerDir]
+      paths: [ctx.args.srcDir, ctx.args.bowerDir]
       filename: 'bundle.less'
 
     parser.parse src, (err, tree) ->
-      css = tree.toCSS compress: ctx.cmd.compress
-      fs.writeFileSync "#{ctx.cmd.buildDir}/css/all.css", css
-      log.debug "Finished styles"
-      resolve ctx
+      if err
+        reject err
+      else
+        css = tree.toCSS compress: ctx.args.compress
+        fs.writeFileSync "#{ctx.args.buildDir}/css/all.css", css
+        log.debug "Finished styles"
+        resolve ctx
 
 copyFontAwesome = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started copying font-awesome"
-    src = "#{ctx.cmd.bowerDir}/font-awesome/fonts/*"
-    dst = "#{ctx.cmd.buildDir}/fonts/"
+    src = "#{ctx.args.bowerDir}/font-awesome/fonts/*"
+    dst = "#{ctx.args.buildDir}/fonts/"
     exec "cp #{src} #{dst}", (err, out) ->
       if err
         reject err
@@ -70,11 +73,11 @@ copyFontAwesome = (ctx) ->
 copyImages = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started copying images"
-    images = glob.sync "#{ctx.cmd.srcDir}/**/*.+(jpg|png)"
+    images = glob.sync "#{ctx.args.srcDir}/**/*.+(jpg|png)"
     promises = _.map images, (file) ->
       new Promise (resolve, reject) ->
-        relPath = path.relative ctx.cmd.srcDir, file
-        dst = "#{ctx.cmd.buildDir}/images/#{path.dirname relPath}"
+        relPath = path.relative ctx.args.srcDir, file
+        dst = "#{ctx.args.buildDir}/images/#{path.dirname relPath}"
         exec "mkdir -p #{dst} && cp #{file} #{dst}", (err) ->
           if err then reject(err) else resolve()
 
@@ -94,8 +97,8 @@ signalDone = (ctx) ->
 signalError = (err) ->
   log "Error building", err, err.stack
 
-module.exports = (cmd) ->
-  startBuild(cmd: cmd).then (ctx) ->
+module.exports = run: (args) ->
+  startBuild(args: args).then (ctx) ->
     new Promise (resolve, reject) ->
       steps = rsvp.all _.map [
         buildScripts, buildStyles, copyFontAwesome, copyImages

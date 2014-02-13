@@ -18,12 +18,12 @@ dateFormat = 'MMMM Do YYYY, h:mm:ss a'
 extractFrontMatter = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started extracting front matter"
-    files = glob.sync "#{ctx.cmd.srcDir}/**/*.md"
+    files = glob.sync "#{ctx.args.srcDir}/**/*.md"
     ctx.pageMetadata = _.reduce files, (data, file) ->
-      relativePath = path.relative ctx.cmd.srcDir, file
+      relativePath = path.relative ctx.args.srcDir, file
       {attributes, body} = fm fs.readFileSync file, encoding: 'utf8'
 
-      fs.writeFileSync "#{ctx.cmd.buildDir}/#{relativePath}", body
+      fs.writeFileSync "#{ctx.args.buildDir}/#{relativePath}", body
 
       slug = slugify(
         attributes.slug || attributes.title || path.basename(file, '.md')
@@ -44,9 +44,9 @@ extractFrontMatter = (ctx) ->
 addGitMetadata = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started extracting git metadata"
-    files = glob.sync "#{ctx.cmd.srcDir}/**/*.md"
+    files = glob.sync "#{ctx.args.srcDir}/**/*.md"
     promises = _.map files, (file) ->
-      relativePath = path.relative ctx.cmd.srcDir, file
+      relativePath = path.relative ctx.args.srcDir, file
       new Promise (resolve, reject) ->
         exec "git log --follow --pretty=\"format:%h|%ai\" #{file}", (err, output) ->
           md = ctx.pageMetadata[relativePath]
@@ -61,9 +61,9 @@ addGitMetadata = (ctx) ->
 
 renderPages = (ctx) ->
   log.debug "Started compiling templates"
-  files = glob.sync "#{ctx.cmd.srcDir}/**/*.hamlc"
+  files = glob.sync "#{ctx.args.srcDir}/**/*.hamlc"
   templates = _.reduce files, (templates, file) ->
-    relativePath = path.relative ctx.cmd.buildDir, file
+    relativePath = path.relative ctx.args.buildDir, file
     relativePath = path.basename relativePath, '.hamlc'
     templates[relativePath] = hamlc.compile String fs.readFileSync file
     templates
@@ -72,11 +72,11 @@ renderPages = (ctx) ->
 
   new Promise (resolve, reject) ->
     log.debug "Started rendering pages"
-    files = glob.sync "#{ctx.cmd.buildDir}/**/*.md"
+    files = glob.sync "#{ctx.args.buildDir}/**/*.md"
     _.each files, (file) ->
-      relativePath = path.relative ctx.cmd.buildDir, file
+      relativePath = path.relative ctx.args.buildDir, file
 
-      if ctx.cmd.renderDrafts || !ctx.pageMetadata[relativePath].draft
+      if ctx.args.renderDrafts || !ctx.pageMetadata[relativePath].draft
         md = fs.readFileSync file
         html = marked String(md),
           gfm: true
@@ -101,7 +101,7 @@ renderPages = (ctx) ->
             .reverse().value()
 
 
-        dest = "#{ctx.cmd.buildDir}/#{pageData.page.path}"
+        dest = "#{ctx.args.buildDir}/#{pageData.page.path}"
         fs.writeFileSync dest, templates['site'](pageData)
       fs.unlinkSync file
 

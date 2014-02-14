@@ -59,19 +59,22 @@ addGitMetadata = (ctx) ->
       log.debug "Finished extracting git metadata"
       resolve ctx
 
-renderPages = (ctx) ->
-  log.debug "Started compiling templates"
-  files = glob.sync "#{ctx.args.srcDir}/**/*.hamlc"
-  templates = _.reduce files, (templates, file) ->
-    relativePath = path.relative ctx.args.buildDir, file
-    relativePath = path.basename relativePath, '.hamlc'
-    templates[relativePath] = hamlc.compile String fs.readFileSync file
-    templates
-  , {}
-  log.debug "Finished compiling templates"
+# old compileTemplates
+  #files = glob.sync "#{ctx.args.srcDir}/**/*.hamlc"
+  #templates = _.reduce files, (templates, file) ->
+    #relativePath = path.relative ctx.args.buildDir, file
+    #relativePath = path.basename relativePath, '.hamlc'
+    #templates[relativePath] = hamlc.compile String fs.readFileSync file
+    #templates
+  #, {}
 
+
+renderPages = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started rendering pages"
+    # TODO this leaks a global
+    require "#{ctx.args.srcDir}/.tmp/templates.jst"
+
     files = glob.sync "#{ctx.args.buildDir}/**/*.md"
     _.each files, (file) ->
       relativePath = path.relative ctx.args.buildDir, file
@@ -90,7 +93,7 @@ renderPages = (ctx) ->
           site:
             pages: ctx.pageMetadata
           page: _.extend ctx.pageMetadata[relativePath], html: html
-          JST: templates
+          JST: require "#{ctx.args.srcDir}/.tmp/templates.jst"
           helpers:
             date: (date) -> moment(date).format(dateFormat)
             _: _
@@ -103,7 +106,7 @@ renderPages = (ctx) ->
 
 
         dest = "#{ctx.args.buildDir}/#{pageData.page.path}"
-        fs.writeFileSync dest, templates[ctx.args.mainTemplate](pageData)
+        fs.writeFileSync dest, pageData.JST[ctx.args.mainTemplate](pageData)
       fs.unlinkSync file
 
     log.debug "Finished rendering pages"

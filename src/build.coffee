@@ -18,15 +18,31 @@ startBuild = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Starting build"
     mkdirp.sync ctx.args.buildDir
+    mkdirp.sync "#{ctx.args.srcDir}/.tmp"
     _.each ['css', 'js', 'fonts', 'images'], (dir) ->
       mkdirp.sync "#{ctx.args.buildDir}/#{dir}"
     resolve ctx
+
+compileTemplates = (ctx) ->
+  new Promise (resolve, reject) ->
+    log.debug "Started compiling templates"
+    compiler = path.resolve "#{__dirname}/../node_modules/.bin/haml-coffee"
+    cmd      = "#{compiler} -i #{ctx.args.srcDir} -o #{ctx.args.srcDir}/.tmp/templates.jst -n module.exports -b"
+    exec cmd, (err, output) ->
+      if err
+        reject err
+      else
+        log.debug "Finished compiling templates"
+        resolve ctx
 
 buildScripts = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started scripts"
 
-    bundle = browserify "#{ctx.args.srcDir}/#{ctx.args.mainScript}"
+    bundle = browserify
+      entries: ["#{ctx.args.srcDir}/#{ctx.args.mainScript}"]
+      extensions: ['.jst', '.coffee']
+
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.args.compress
     bundle.transform require 'debowerify'
@@ -105,6 +121,8 @@ signalError = (err) ->
 
 module.exports = run: (args) ->
   startBuild(args: args).then (ctx) ->
+    compileTemplates ctx
+  .then (ctx) ->
     new Promise (resolve, reject) ->
       steps = rsvp.all _.map [
         buildScripts, buildStyles, copyFontAwesome, copyImages

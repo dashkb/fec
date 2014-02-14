@@ -29,6 +29,7 @@ buildScripts = (ctx) ->
     bundle = browserify "#{ctx.args.srcDir}/#{ctx.args.mainScript}"
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.args.compress
+    bundle.transform require 'debowerify'
     bundle.bundle (err, src) ->
       if err
         reject err

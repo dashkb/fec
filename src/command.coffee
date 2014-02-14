@@ -9,6 +9,7 @@ module.exports = run: ->
     .default('srcDir', "#{cwd}/fe")
     .default('buildDir', "#{cwd}/public")
     .default('mainScript', "fe.coffee")
+    .default('mainTemplate', "fe")
     .alias
       srcDir: 's'
       buildDir: 'b'

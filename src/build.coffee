@@ -60,15 +60,20 @@ buildStyles = (ctx) ->
 
 copyFontAwesome = (ctx) ->
   new Promise (resolve, reject) ->
-    log.debug "Started copying font-awesome"
-    src = "#{ctx.args.bowerDir}/font-awesome/fonts/*"
-    dst = "#{ctx.args.buildDir}/fonts/"
-    exec "cp #{src} #{dst}", (err, out) ->
-      if err
-        reject err
-      else
-        log.debug "Finished copying font-awesome"
-        resolve ctx
+    faDir = "#{ctx.args.bowerDir}/font-awesome"
+
+    if fs.existsSync faDir
+      log.debug "Started copying font-awesome"
+      src = "#{faDir}/fonts/*"
+      dst = "#{ctx.args.buildDir}/fonts/"
+      exec "cp #{src} #{dst}", (err, out) ->
+        if err
+          reject err
+        else
+          log.debug "Finished copying font-awesome"
+          resolve ctx
+    else
+      resolve ctx
 
 copyImages = (ctx) ->
   new Promise (resolve, reject) ->

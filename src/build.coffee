@@ -14,6 +14,7 @@ moment      = require 'moment'
 log         = require './log'
 buildPages  = require './build_pages'
 
+
 startBuild = (ctx) ->
   ctx.startedAt = moment()
   new Promise (resolve, reject) ->
@@ -24,17 +25,47 @@ startBuild = (ctx) ->
       mkdirp.sync "#{ctx.args.buildDir}/#{dir}"
     resolve ctx
 
+compileTemplate = (template, ctx) ->
+  CoffeeScript = require 'coffee-script'
+  compiler = new (require '../node_modules/haml-coffee/src/haml-coffee')
+    placement: 'standalone'
+    uglify: ctx.args.compress
+
+  compiler.parse fs.readFileSync template, encoding: 'utf8'
+
+  CoffeeScript.compile compiler.precompile(),
+    bare: true
+
 compileTemplates = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started compiling templates"
-    compiler = path.resolve "#{__dirname}/../node_modules/.bin/haml-coffee"
-    cmd      = "#{compiler} -i #{ctx.args.srcDir} -o #{ctx.args.tmpDir}/templates.jst -n module.exports -b"
-    exec cmd, (err, output) ->
-      if err
-        reject err
-      else
-        log.debug "Finished compiling templates"
-        resolve ctx
+    sources   = glob.sync "#{ctx.args.srcDir}/**/*.hamlc"
+    cacheFile = "#{ctx.args.tmpDir}/templates.json"
+    cache     = try
+      JSON.parse fs.readFileSync cacheFile, encoding: 'utf8'
+    catch
+      log.warn "Could not load template cache; starting from scratch"
+      {}
+
+    _.each sources, (template) ->
+      if fs.statSync(template).mtime > (cache[template]?.mtime || 0)
+        cache[template] =
+          mtime: +new Date()
+          js: compileTemplate template, ctx
+    fs.writeFileSync cacheFile, JSON.stringify(cache)
+
+    jstSrc = _.reduce cache, (out, {js}, file) ->
+      key = path.relative ctx.args.srcDir, file
+      key = path.basename key, path.extname(key)
+      out + "module.exports[\"#{key}\"] = function(ctx) {\n
+        return (function() {\n
+          #{js}\n
+        }).call(ctx);
+      };\n"
+    , 'module.exports = {};\n'
+    fs.writeFileSync "#{ctx.args.tmpDir}/templates.jst", jstSrc
+
+    resolve ctx
 
 buildScripts = (ctx) ->
   new Promise (resolve, reject) ->

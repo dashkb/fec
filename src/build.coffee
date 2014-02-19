@@ -15,10 +15,11 @@ log         = require './log'
 buildPages  = require './build_pages'
 
 startBuild = (ctx) ->
+  ctx.startedAt = moment()
   new Promise (resolve, reject) ->
     log.debug "Starting build"
     mkdirp.sync ctx.args.buildDir
-    mkdirp.sync "#{ctx.args.srcDir}/.tmp"
+    mkdirp.sync ctx.args.tmpDir
     _.each ['css', 'js', 'fonts', 'images'], (dir) ->
       mkdirp.sync "#{ctx.args.buildDir}/#{dir}"
     resolve ctx
@@ -27,7 +28,7 @@ compileTemplates = (ctx) ->
   new Promise (resolve, reject) ->
     log.debug "Started compiling templates"
     compiler = path.resolve "#{__dirname}/../node_modules/.bin/haml-coffee"
-    cmd      = "#{compiler} -i #{ctx.args.srcDir} -o #{ctx.args.srcDir}/.tmp/templates.jst -n module.exports -b"
+    cmd      = "#{compiler} -i #{ctx.args.srcDir} -o #{ctx.args.tmpDir}/templates.jst -n module.exports -b"
     exec cmd, (err, output) ->
       if err
         reject err
@@ -113,8 +114,8 @@ copyImages = (ctx) ->
 
 signalDone = (ctx) ->
   new Promise (resolve, reject) ->
+    log "Build finished in #{moment().diff ctx.startedAt}ms"
     resolve ctx
-    log "Hooray"
 
 signalError = (err) ->
   log "Error building", err, err.stack

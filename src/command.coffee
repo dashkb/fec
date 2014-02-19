@@ -8,6 +8,7 @@ module.exports = run: ->
     .default('bowerDir', "#{cwd}/bower_components")
     .default('srcDir', "#{cwd}/fe")
     .default('buildDir', "#{cwd}/public")
+    .default('tmpDir', "#{cwd}/tmp")
     .default('mainScript', "fe.coffee")
     .default('mainTemplate', "fe")
     .alias
@@ -15,6 +16,8 @@ module.exports = run: ->
       buildDir: 'b'
       mainScript: 'm'
     .argv
+
+  args._.push 'build' if args._.length == 0
 
   _.each args._, (command) ->
     if command == 'watch'

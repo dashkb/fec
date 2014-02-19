@@ -16,6 +16,7 @@ log       = require './log'
 dateFormat = 'MMMM Do YYYY, h:mm:ss a'
 
 extractFrontMatter = (ctx) ->
+  startedAt = moment()
   new Promise (resolve, reject) ->
     log.debug "Started extracting front matter"
     files = glob.sync "#{ctx.args.srcDir}/**/*.md"
@@ -38,10 +39,11 @@ extractFrontMatter = (ctx) ->
       data
     , {}
 
-    log.debug "Finished extracting front matter"
+    log.debug "Finished extracting front matter in #{moment().diff startedAt}ms"
     resolve ctx
 
 addGitMetadata = (ctx) ->
+  startedAt = moment()
   new Promise (resolve, reject) ->
     log.debug "Started extracting git metadata"
     files = glob.sync "#{ctx.args.srcDir}/**/*.md"
@@ -56,10 +58,11 @@ addGitMetadata = (ctx) ->
           resolve()
 
     rsvp.all(promises).then ->
-      log.debug "Finished extracting git metadata"
+      log.debug "Finished extracting git metadata in #{moment().diff startedAt}ms"
       resolve ctx
 
 renderPages = (ctx) ->
+  startedAt = moment()
   new Promise (resolve, reject) ->
     log.debug "Started rendering pages"
 
@@ -97,10 +100,11 @@ renderPages = (ctx) ->
         fs.writeFileSync dest, pageData.JST[ctx.args.mainTemplate](pageData)
       fs.unlinkSync file
 
-    log.debug "Finished rendering pages"
+    log.debug "Finished rendering pages in #{moment().diff startedAt}ms"
     resolve ctx
 
 module.exports = buildPages = (ctx) ->
+  startedAt = moment()
   log.debug "Started building pages"
   new Promise (resolve, reject) ->
     extractFrontMatter(ctx).then (ctx) ->
@@ -108,7 +112,7 @@ module.exports = buildPages = (ctx) ->
     .then (ctx) ->
       renderPages ctx
     .then (ctx) ->
-      log.debug "Finished building pages"
+      log.debug "Finished building pages in #{moment().diff startedAt}ms"
       resolve ctx
     .then null, (err) ->
       reject err

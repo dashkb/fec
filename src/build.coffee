@@ -18,7 +18,6 @@ buildPages  = require './build_pages'
 startBuild = (ctx) ->
   ctx.startedAt = moment()
   new Promise (resolve, reject) ->
-    log.debug "Starting build"
     mkdirp.sync ctx.args.buildDir
     mkdirp.sync ctx.args.tmpDir
     _.each ['css', 'js', 'fonts', 'images'], (dir) ->
@@ -37,8 +36,9 @@ compileTemplate = (template, ctx) ->
     bare: true
 
 compileTemplates = (ctx) ->
+  startedAt = moment()
+  log.debug "Started compiling templates"
   new Promise (resolve, reject) ->
-    log.debug "Started compiling templates"
     sources   = glob.sync "#{ctx.args.srcDir}/**/*.hamlc"
     cacheFile = "#{ctx.args.tmpDir}/templates.json"
     cache     = try
@@ -65,11 +65,12 @@ compileTemplates = (ctx) ->
     , 'module.exports = {};\n'
     fs.writeFileSync "#{ctx.args.tmpDir}/templates.jst", jstSrc
 
+    log.debug "Finished compiling templates in #{moment().diff startedAt}ms"
     resolve ctx
 
 buildScripts = (ctx) ->
+  startedAt = moment()
   new Promise (resolve, reject) ->
-    log.debug "Started scripts"
 
     bundle = browserify
       entries: ["#{ctx.args.srcDir}/#{ctx.args.mainScript}"]
@@ -83,12 +84,12 @@ buildScripts = (ctx) ->
         reject err
       else
         fs.writeFileSync "#{ctx.args.buildDir}/js/all.js", src
-        log.debug "Finished scripts"
+        log.debug "Finished compiling scripts in #{moment().diff startedAt}ms"
         resolve ctx
 
 buildStyles = (ctx) ->
+  startedAt = moment()
   new Promise (resolve, reject) ->
-    log.debug "Started styles"
     files = glob.sync "#{ctx.args.srcDir}/**/*.+(less|css)"
     src = _.reduce files, (src, path) ->
       src + fs.readFileSync path
@@ -104,7 +105,7 @@ buildStyles = (ctx) ->
       else
         css = tree.toCSS compress: ctx.args.compress
         fs.writeFileSync "#{ctx.args.buildDir}/css/all.css", css
-        log.debug "Finished styles"
+        log.debug "Finished compiling styles in #{moment().diff startedAt}ms"
         resolve ctx
 
 copyFontAwesome = (ctx) ->
@@ -112,19 +113,18 @@ copyFontAwesome = (ctx) ->
     faDir = "#{ctx.args.bowerDir}/font-awesome"
 
     if fs.existsSync faDir
-      log.debug "Started copying font-awesome"
       src = "#{faDir}/fonts/*"
       dst = "#{ctx.args.buildDir}/fonts/"
       exec "cp #{src} #{dst}", (err, out) ->
         if err
           reject err
         else
-          log.debug "Finished copying font-awesome"
           resolve ctx
     else
       resolve ctx
 
 copyImages = (ctx) ->
+  startedAt = moment()
   new Promise (resolve, reject) ->
     log.debug "Started copying images"
     images = glob.sync "#{ctx.args.srcDir}/**/*.+(jpg|png)"
@@ -137,7 +137,7 @@ copyImages = (ctx) ->
 
     if promises.length > 0
       rsvp.all(promises).then ->
-        log.debug "Finished copying images"
+        log.debug "Finished copying images in #{moment().diff startedAt}ms"
         resolve ctx
     else
       log.debug "No images found"

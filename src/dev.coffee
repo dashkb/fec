@@ -7,6 +7,7 @@ build = require './build'
 devArgs = yargs
   .default('port', process.env.PORT || 8000)
   .default('serve', true)
+  .default('srcDir', )
   .argv
 
 module.exports = run: (args) ->
@@ -39,6 +40,5 @@ module.exports = run: (args) ->
       log "Dev server listening on port #{args.port}"
 
     log "Press return to rebuild"
-    (require 'gaze') "#{process.cwd()}/fe/**", (err, watcher) ->
+    (require 'gaze') "#{args.srcDir}/**", (err, watcher) ->
       @on 'all', -> rebuild()
-

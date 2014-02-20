@@ -25,6 +25,7 @@ startBuild = (ctx) ->
     resolve ctx
 
 compileTemplate = (template, ctx) ->
+  log.debug "Recompiling template #{template}"
   CoffeeScript = require 'coffee-script'
   compiler = new (require '../node_modules/haml-coffee/src/haml-coffee')
     placement: 'standalone'
@@ -66,6 +67,7 @@ compileTemplates = (ctx) ->
     fs.writeFileSync "#{ctx.args.tmpDir}/templates.jst", jstSrc
 
     log.debug "Finished compiling templates in #{moment().diff startedAt}ms"
+    ctx.JST = eval "(function(){ #{jstSrc}; return module.exports;}).call()"
     resolve ctx
 
 buildScripts = (ctx) ->

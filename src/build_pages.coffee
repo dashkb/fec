@@ -84,7 +84,7 @@ renderPages = (ctx) ->
           site:
             pages: ctx.pageMetadata
           page: _.extend ctx.pageMetadata[relativePath], html: html
-          JST: require "#{ctx.args.tmpDir}/templates.jst"
+          JST: ctx.JST
           helpers:
             date: (date) -> moment(date).format(dateFormat)
             _: _

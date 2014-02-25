@@ -87,14 +87,6 @@ renderPages = (ctx) ->
           JST: ctx.JST
           helpers:
             date: (date) -> moment(date).format(dateFormat)
-            _: _
-            articles: _(ctx.pageMetadata).values().filter (page) ->
-              # TODO this can't be here, too bloggy
-              page.template == 'article' && page.index
-            .sortBy (page) ->
-              _.first(page.revisions).date
-            .reverse().value()
-
 
         dest = "#{ctx.args.buildDir}/#{pageData.page.path}"
         fs.writeFileSync dest, pageData.JST[ctx.args.mainTemplate](pageData)

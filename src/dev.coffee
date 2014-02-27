@@ -7,11 +7,11 @@ build = require './build'
 devArgs = yargs
   .default('port', process.env.PORT || 8000)
   .default('serve', true)
-  .default('srcDir', )
   .argv
 
 module.exports = run: (args) ->
   _.defaults args, devArgs
+  args.renderDrafts = true
 
   building = false
   rebuild = (cb) ->

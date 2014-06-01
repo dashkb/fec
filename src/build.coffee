@@ -77,6 +77,7 @@ buildScripts = (ctx) ->
     bundle = browserify
       entries: ["#{ctx.args.srcDir}/#{ctx.args.mainScript}"]
       extensions: ['.jst', '.coffee']
+      ignoreMissing: true
 
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.args.compress

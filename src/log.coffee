@@ -6,6 +6,7 @@ opts      =
   defaultLevel: 'info'
   threshold: 'debug'
   levels: ['trace', 'debug', 'info', 'warn', 'error']
+  disabled: false
 
 n = (level) -> opts.levels.indexOf level
 
@@ -14,7 +15,7 @@ createLogFns = ->
   _.reduce opts.levels, (fns, level) ->
     fns[level] = (msg...) ->
       msg = _.map msg, (item) -> if typeof(item) == 'string' then item else inspect item
-      if n(level) >= n(opts.threshold)
+      if n(level) >= n(opts.threshold) && !opts.disabled
         console.log "#{timestamp()} #{msg.join()}"
     fns
   , {}
@@ -37,5 +38,7 @@ log.timePromise = (p, msg, level = 'debug') ->
     log[level] "#{msg} failed #{moment().diff start}ms"
 
   p
+
+log.disable = -> opts.disabled = true
 
 module.exports = log

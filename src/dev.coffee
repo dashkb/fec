@@ -3,10 +3,11 @@ _     = require 'lodash'
 yargs = require 'yargs'
 log   = require './log'
 build = require './build'
+dotfe = require('./dotfe').load()
 
 devArgs = yargs
-  .default('port', process.env.PORT || 8000)
-  .default('serve', true)
+  .default('port', process.env.PORT || dotfe.PORT || dotfe.port || 8000)
+  .default('serve', dotfe.serve || true)
   .argv
 
 module.exports = run: (args) ->

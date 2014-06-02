@@ -7,7 +7,6 @@ browserify = require 'browserify'
 
 exportArgs = yargs
   .demand(['sourceFile', 'outFile'])
-  .default('compress', 'false')
   .alias('s', 'sourceFile')
   .alias('o', 'outFile')
   .alias('r', 'requireAs')

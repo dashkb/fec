@@ -18,6 +18,7 @@ module.exports = run: ->
     .default('verbose', dotfe.verbose || false)
     .default('quiet', dotfe.quiet || false)
     .default('cssPreprocessor', dotfe.cssPreprocessor || 'less')
+    .default('withTemplates', dotfe.withTemplates || "templates.jst")
     .count('verbose')
     .alias
       srcDir: 's'

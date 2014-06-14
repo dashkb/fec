@@ -89,8 +89,7 @@ buildScripts = (ctx) ->
         log.debug "Finished compiling scripts in #{moment().diff startedAt}ms"
         resolve ctx
 
-buildStyles = (ctx) ->
-  (require './css_preprocessors/less') ctx
+buildStyles = (ctx) -> (require "./css_preprocessors/#{ctx.args.cssPreprocessor}") ctx
 
 copyFontAwesome = (ctx) ->
   new Promise (resolve, reject) ->

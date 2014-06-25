@@ -1,9 +1,9 @@
 {
-  "name": "fetool",
+  "name": "fec",
   "version": "0.0.1",
   "bin": "./bin/fetool",
-  "repository": "http://github.com/dashkb/fetool",
-  "description": "Front end tool",
+  "repository": "http://github.com/dashkb/fec",
+  "description": "Front end compiler",
   "dependencies": {
     "marked": "~0.3.0",
     "highlight.js": "~8.0.0",

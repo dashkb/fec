@@ -24,11 +24,7 @@ flexible configuration options.
 
 #### Quick Start
 
-I'm working on publishing to NPM; hopefully getting ownership of `fetool`.  Until
-then, we'll install from GH.
-
-* `npm install -g git://github.com/dashkb/fetool`
-* `npm install -g bower`
+* `npm install -g fec bower`
 * `mkdir project-folder`
 * `cd project-folder`
 * `bower install --save jquery bootstrap font-awesome`
@@ -76,15 +72,15 @@ Some *markdown* content.
 
 And run the tool
 
-* `fetool`
+* `fec`
 
 You'll see the output in `public`.
 
-Run `fetool dev` to recompile on changes, and start a static webserver.
+Run `fec dev` to recompile on changes, and start a static webserver.
 
 #### Configuring
 
-The tool accepts some options.  Run `fetool help` to see the defaults.
+The tool accepts some options.  Run `fec help` to see the defaults.
 
 * `--bowerDir` You can `require('package-installed-with-bower')` from your front-end code.  If you have your `bower_components` somewhere non-standard (i.e. not `project-root/bower_components`) specify it here.
 * `--srcDir, -s` The directory your front-end source (coffee/less/md) lives
@@ -100,5 +96,5 @@ The tool accepts some options.  Run `fetool help` to see the defaults.
 
 Put a `.fe` file in your project root to override the default for any option.  We'll
 auto detect the format of your file (json, yaml, and dotfile format are supported).
-Be sure to use camelCased, long-option-form of the options.  Run `fetool help` to
+Be sure to use camelCased, long-option-form of the options.  Run `fec help` to
 see your settings; it will reflect the settings from your `.fe` file.

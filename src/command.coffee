@@ -42,6 +42,6 @@ module.exports = run: ->
       args.serve = false
 
     if args.verbose > 1
-      log "Running `fetool #{command}` with opts", args
+      log "Running `fec #{command}` with opts", args
 
     require("./#{command}").run args

@@ -23,7 +23,7 @@ module.exports = run: (args) ->
   .then ->
     new Promise (done, fail) ->
       log.debug "Building site..."
-      exec "fetool build -c", (err, out) ->
+      exec "fec build -c", (err, out) ->
         if err
           fail err
         else

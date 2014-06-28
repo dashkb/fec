@@ -1,6 +1,6 @@
 {
   "name": "fec",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "bin": "./bin/fec",
   "repository": "http://github.com/dashkb/fec",
   "description": "Front end compiler",

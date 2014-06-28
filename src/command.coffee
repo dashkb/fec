@@ -17,6 +17,7 @@ module.exports = run: ->
     .default('compress', dotfe.compress || false)
     .default('verbose', dotfe.verbose || false)
     .default('quiet', dotfe.quiet || false)
+    .default('cssPreprocessor', dotfe.cssPreprocessor || 'less')
     .count('verbose')
     .alias
       srcDir: 's'

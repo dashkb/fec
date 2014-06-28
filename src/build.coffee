@@ -7,7 +7,6 @@ browserify  = require 'browserify'
 glob        = require 'glob'
 path        = require 'path'
 Promise     = rsvp.Promise
-less        = require 'less'
 uglifyify   = require 'uglifyify'
 {exec}      = require 'child_process'
 moment      = require 'moment'
@@ -91,25 +90,7 @@ buildScripts = (ctx) ->
         resolve ctx
 
 buildStyles = (ctx) ->
-  startedAt = moment()
-  new Promise (resolve, reject) ->
-    files = glob.sync "#{ctx.args.srcDir}/**/*.+(less|css)"
-    src = _.reduce files, (src, path) ->
-      src + fs.readFileSync path
-    , ''
-
-    parser = new less.Parser
-      paths: [ctx.args.srcDir, ctx.args.bowerDir]
-      filename: 'bundle.less'
-
-    parser.parse src, (err, tree) ->
-      if err
-        reject err
-      else
-        css = tree.toCSS compress: ctx.args.compress
-        fs.writeFileSync "#{ctx.args.buildDir}/css/all.css", css
-        log.debug "Finished compiling styles in #{moment().diff startedAt}ms"
-        resolve ctx
+  (require './css_preprocessors/less') ctx
 
 copyFontAwesome = (ctx) ->
   new Promise (resolve, reject) ->

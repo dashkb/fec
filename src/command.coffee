@@ -14,6 +14,7 @@ module.exports = run: ->
     .default('tmpDir', dotfe.tmpDir || "#{cwd}/tmp")
     .default('mainScript', dotfe.mainScript || "fe.coffee")
     .default('mainTemplate', dotfe.mainTemplate || "fe")
+    .default('mainStylesheet', dotfe.mainStylesheet || 'fe')
     .default('compress', dotfe.compress || false)
     .default('verbose', dotfe.verbose || false)
     .default('quiet', dotfe.quiet || false)

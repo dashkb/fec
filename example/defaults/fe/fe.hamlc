@@ -1,0 +1,7 @@
+!!!
+%html
+  %head
+    %title= @page.title
+  %body
+    #header Check out this sweet page
+    != @page.html

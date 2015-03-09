@@ -63,9 +63,16 @@ compileTemplates = (ctx) ->
         }).call(ctx);
       };\n"
     , 'var _ = require("lodash");\nmodule.exports = {};\n'
+
     fs.writeFileSync "#{ctx.args.tmpDir}/templates.jst", jstSrc
 
     log.debug "Finished compiling templates in #{moment().diff startedAt}ms"
+
+    if dest = ctx.args.withTemplates
+      dest = "#{ctx.args.buildDir}/js/#{dest}"
+      fs.writeFileSync dest, jstSrc
+      log.debug "Wrote templates to #{dest}"
+
     ctx.JST = eval "(function(){ #{jstSrc}; return module.exports;}).call()"
     resolve ctx
 

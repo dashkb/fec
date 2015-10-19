@@ -1,6 +1,6 @@
 fs = require 'fs'
 path = require 'path'
-yaml = require 'libyaml'
+yaml = require 'js-yaml'
 envfile = require 'envfile'
 log = require './log'
 cfg = undefined
@@ -22,7 +22,7 @@ loadConfig = ->
     if src.match /^{/
       parseFn = JSON.parse
     else if src.match /^---/ || src.match /^%YAML/
-      parseFn = (str) -> yaml.parse(str)[0]
+      parseFn = (str) -> yaml.load(str)[0]
     else
       parseFn = envfile.parseSync
 

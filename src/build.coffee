@@ -3,7 +3,7 @@ mkdirp      = require 'mkdirp'
 rimraf      = require 'rimraf'
 rsvp        = require 'rsvp'
 _           = require 'lodash'
-browserify  = require 'browserify'
+browserify  = require 'browserify-incremental'
 glob        = require 'glob'
 path        = require 'path'
 Promise     = rsvp.Promise
@@ -12,7 +12,6 @@ uglifyify   = require 'uglifyify'
 moment      = require 'moment'
 log         = require './log'
 buildPages  = require './build_pages'
-
 
 startBuild = (ctx) ->
   ctx.startedAt = moment()
@@ -64,37 +63,46 @@ compileTemplates = (ctx) ->
       };\n"
     , 'var _ = require("lodash");\nmodule.exports = {};\n'
 
-    fs.writeFileSync "#{ctx.args.tmpDir}/templates.jst", jstSrc
+    fs.writeFileSync "#{ctx.args.srcDir}/__templates.jst", jstSrc
 
     log.debug "Finished compiling templates in #{moment().diff startedAt}ms"
-
-    if dest = ctx.args.withTemplates
-      dest = "#{ctx.args.buildDir}/js/#{dest}"
-      fs.writeFileSync dest, jstSrc
-      log.debug "Wrote templates to #{dest}"
 
     ctx.JST = eval "(function(){ #{jstSrc}; return module.exports;}).call()"
     resolve ctx
 
-buildScripts = (ctx) ->
-  startedAt = moment()
-  new Promise (resolve, reject) ->
-
+makeBundle = (ctx) ->
+  try
     bundle = browserify
       entries: ["#{ctx.args.srcDir}/#{ctx.args.mainScript}"]
       extensions: ['.jst', '.coffee', '.js']
       ignoreMissing: true
+      cacheFile: "#{ctx.args.tmpDir}/scripts.json"
 
     bundle.transform require 'coffeeify'
     bundle.transform require 'uglifyify' if ctx.args.compress
     bundle.transform require 'debowerify'
-    bundle.bundle (err, src) ->
-      if err
-        reject err
-      else
-        fs.writeFileSync "#{ctx.args.buildDir}/js/all.js", src
-        log.debug "Finished compiling scripts in #{moment().diff startedAt}ms"
-        resolve ctx
+    bundle
+  catch e
+    log.debug "Error preparing bundle: #{e}"
+
+buildScripts = (ctx) ->
+  startedAt = moment()
+  bundle = makeBundle ctx
+
+  new Promise (done, fail) ->
+    if bundle
+      bundle
+        .bundle()
+        .pipe(fs.createWriteStream "#{ctx.args.buildDir}/js/all.js")
+
+      bundle
+        .on 'time', (ms) ->
+          log.debug "Finished compiling scripts in #{ms}ms"
+          done()
+        .on 'error', (err) ->
+          fail "Error compiling scripts: #{err}"
+    else
+      fail "Error preparing bundle"
 
 buildStyles = (ctx) -> (require "./css_preprocessors/#{ctx.args.cssPreprocessor}") ctx
 
@@ -103,6 +111,7 @@ copyFontAwesome = (ctx) ->
     faDir = "#{ctx.args.bowerDir}/font-awesome"
 
     if fs.existsSync faDir
+      log "Copying fonts"
       src = "#{faDir}/fonts/*"
       dst = "#{ctx.args.buildDir}/fonts/"
       exec "cp #{src} #{dst}", (err, out) ->
@@ -152,6 +161,7 @@ module.exports = run: (args) ->
       steps.then -> resolve ctx
       steps.then null, reject
   .then (ctx) ->
+    log 'pages'
     buildPages ctx
   .then (ctx) ->
     signalDone ctx

@@ -1,6 +1,6 @@
 {
   "name": "fec",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": "./bin/fec",
   "repository": "http://github.com/dashkb/fec",
   "description": "Front end compiler",
@@ -25,7 +25,7 @@
     "marked": "~0.3.0",
     "mkdirp": "~0.3.5",
     "moment": "~2.5.0",
-    "node-sass": "^0.9.2",
+    "node-sass": "^3.4.2",
     "rimraf": "~2.2.6",
     "rsvp": "~3.0.3",
     "slug": "~0.4.0",

@@ -16,7 +16,7 @@ module.exports = run: (args) ->
 
   new Promise (done, fail) ->
     exec "git status", (err, out) ->
-      if out.match /working directory clean/
+      if out.match /working (directory|tree) clean/
         done()
       else
         fail "You must have a clean working directory to deploy.  Check the output of `git status`."

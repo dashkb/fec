@@ -31,6 +31,7 @@
     "slug": "~0.4.0",
     "uglify-js": "~2.4.9",
     "uglifyify": "~1.1.0",
+    "unicode": "^0.6.1",
     "yargs": "~1.0.15"
   },
   "devDependencies": {
